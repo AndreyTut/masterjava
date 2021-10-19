@@ -21,14 +21,10 @@ public class MatrixUtil {
             futures.add(executor.submit(() -> getResultColumn(matrixA, matrixB, finalI)));
         }
 
-        boolean completed = false;
-        while (!completed) {
-            completed = true;
             for (int i = 0; i < matrixSize; i++) {
                 Future<int[]> future = futures.get(i);
                 matrixC[i] = future.get();
             }
-        }
         return matrixC;
     }
 
