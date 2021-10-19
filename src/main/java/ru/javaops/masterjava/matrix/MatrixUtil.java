@@ -1,8 +1,9 @@
 package ru.javaops.masterjava.matrix;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 /**
  * gkislin
@@ -14,7 +15,20 @@ public class MatrixUtil {
     public static int[][] concurrentMultiply(int[][] matrixA, int[][] matrixB, ExecutorService executor) throws InterruptedException, ExecutionException {
         final int matrixSize = matrixA.length;
         final int[][] matrixC = new int[matrixSize][matrixSize];
+        List<Future<int[]>> futures = new ArrayList<>();
+        for (int i = 0; i < matrixSize; i++) {
+            int finalI = i;
+            futures.add(executor.submit(() -> getResultColumn(matrixA, matrixB, finalI)));
+        }
 
+        boolean completed = false;
+        while (!completed) {
+            completed = true;
+            for (int i = 0; i < matrixSize; i++) {
+                Future<int[]> future = futures.get(i);
+                matrixC[i] = future.get();
+            }
+        }
         return matrixC;
     }
 
@@ -57,5 +71,18 @@ public class MatrixUtil {
             }
         }
         return true;
+    }
+
+    private static int[] getResultColumn(int[][] m1, int[][] m2, int k) {
+        int lengthOfMatrix = m1.length;
+        int[] res = new int[lengthOfMatrix];
+        for (int i = 0; i < lengthOfMatrix; i++) {
+            int sum = 0;
+            for (int j = 0; j < lengthOfMatrix; j++) {
+                sum += m1[k][j] * m2[j][i];
+            }
+            res[i] = sum;
+        }
+        return res;
     }
 }
